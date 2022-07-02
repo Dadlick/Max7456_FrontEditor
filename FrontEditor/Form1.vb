@@ -8,6 +8,7 @@ Public Class Form1
     Dim SymbolPrevievAdd As Boolean = False
     Dim PreviosSelectionX As Integer
     Dim PreviosSelectionY As Integer
+    Dim Str As String = "0123456789ABCDEF"
     Dim PathCopy As Copy_
     Private WithEvents comport As New Ports.SerialPort
     Private Delegate Sub UartReceivDelegate(ByVal Info As Form, ByVal ReciveByte() As Byte)
@@ -20,7 +21,6 @@ Public Class Form1
     End Structure
 
     Private Sub CopySymbol(path As Copy_)
-        Dim Str As String = "0123456789ABCDEF"
         Max74561.LoadSymbol(Max7456Panel1.GetSymbol(path.FromX, path.FromY))
         EditCharacterGroup.Text = "Edit Character: " & Mid(Str, path.ToY + 1, 1) & Mid(Str, path.ToX + 1, 1)
 
@@ -260,8 +260,6 @@ Public Class Form1
     End Sub
 
     Private Sub Max7456Panel1_SymbolChange(Max7456Symbol As Object, x As Integer, y As Integer) Handles Max7456Panel1.SymbolChange
-        Dim Str As String = "0123456789ABCDEF"
-
         CurEditorX = x
         CurEditorY = y
         Max74561.LoadSymbol(Max7456Symbol)
@@ -270,14 +268,18 @@ Public Class Form1
         EditCharacterGroup.Enabled = True
         CharacterListToolStripMenuItem.Enabled = True
 
+        UpdatePreviewSymbol(Max7456Symbol)
+    End Sub
+
+    Private Sub UpdatePreviewSymbol(Max7456Symbol As Object)
         If CharacterFix.Checked = False Then
             SymbolPreviev(PreviosSelectionX, PreviosSelectionY).Image = Picture(Max7456Symbol)
             SymbolPreviev(PreviosSelectionX, PreviosSelectionY).Tag = CurEditorX & "_" & CurEditorY
-            ToolTip1.SetToolTip(SymbolPreviev(PreviosSelectionX, PreviosSelectionY), Mid(Str, y + 1, 1) & Mid(Str, x + 1, 1))
+            ToolTip1.SetToolTip(SymbolPreviev(PreviosSelectionX, PreviosSelectionY), Mid(Str, CurEditorY + 1, 1) & Mid(Str, CurEditorX + 1, 1))
         End If
     End Sub
 
-    Private Sub SaveCharacter_Click(sender As Object, e As EventArgs) Handles SaveCharacter.Click
+    Private Sub DoSaveCharacter()
         Dim Temp() As String
         Max7456Panel1.LoadSymbol(CurEditorX, CurEditorY, Max74561.GetSymbol)
 
@@ -292,6 +294,13 @@ Public Class Form1
                 End If
             Next X
         Next Y
+
+        UpdatePreviewSymbol(Max74561.GetSymbol)
+    End Sub
+
+
+    Private Sub SaveCharacter_Click(sender As Object, e As EventArgs) Handles SaveCharacter.Click
+        DoSaveCharacter()
     End Sub
 
     Private Sub OpenToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles OpenToolStripMenuItem.Click
@@ -366,6 +375,7 @@ Public Class Form1
             Me.Port.SelectedText = ComPort_
         End If
 
+        AddHandler Max74561.SymbolChanged, AddressOf DoSaveCharacter
     End Sub
 
     Private Sub ScalleBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ScalleBox.SelectedIndexChanged
