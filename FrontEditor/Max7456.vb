@@ -5,6 +5,8 @@
     Dim PointBorderStyle_ As System.Windows.Forms.BorderStyle = Windows.Forms.BorderStyle.FixedSingle
     Dim PointColorEditor_ As PointColorEditor = PointColorEditor.All
 
+    Public Event SymbolChanged()
+
     Public Enum PointColorEditor
         All = 0
         Black = 1
@@ -21,6 +23,7 @@
             For x = 0 To 11
                 RemoveHandler Me.Symbol(x, y).MouseDown, AddressOf MyKeyMouseDown
                 RemoveHandler Me.Symbol(x, y).MouseMove, AddressOf MyKeyMouseMove
+                RemoveHandler Me.Symbol(x, y).MouseUp, AddressOf MyKeyMouseUp
             Next x
         Next y
     End Sub
@@ -42,6 +45,7 @@
 
                 AddHandler Me.Symbol(x, y).MouseMove, AddressOf MyKeyMouseMove
                 AddHandler Me.Symbol(x, y).MouseDown, AddressOf MyKeyMouseDown
+                AddHandler Me.Symbol(x, y).MouseUp, AddressOf MyKeyMouseUp
 
             Next x
         Next y
@@ -56,19 +60,27 @@
             x = Int((e.Location.X + sender.Location.X) / PointSize_)
             y = Int((e.Location.Y + sender.Location.y) / PointSize_)
 
-            Select Case PointColorEditor_
-                Case PointColorEditor.Black
-                    Symbol(x, y).BackColor = Max7456_Black
-                    Max7456Symbol_(x, y) = PointColor.Black
-                Case PointColorEditor.White
-                    Symbol(x, y).BackColor = Max7456_White
-                    Max7456Symbol_(x, y) = PointColor.White
-                Case PointColorEditor.Transparent
-                    Symbol(x, y).BackColor = Max7456_Transparent
-                    Max7456Symbol_(x, y) = PointColor.Transparent
-            End Select
+            If x < 12 And y < 18 And x >= 0 And y >= 0 Then
+                Select Case PointColorEditor_
+                    Case PointColorEditor.Black
+                        Symbol(x, y).BackColor = Max7456_Black
+                        Max7456Symbol_(x, y) = PointColor.Black
+                    Case PointColorEditor.White
+                        Symbol(x, y).BackColor = Max7456_White
+                        Max7456Symbol_(x, y) = PointColor.White
+                    Case PointColorEditor.Transparent
+                        Symbol(x, y).BackColor = Max7456_Transparent
+                        Max7456Symbol_(x, y) = PointColor.Transparent
+                End Select
+
+            End If
         End If
     End Sub
+
+    Private Sub MyKeyMouseUp(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs)
+        RaiseEvent SymbolChanged()
+    End Sub
+
 
     Private Sub MyKeyMouseDown(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs)
         Dim Temp() As String
